@@ -16,7 +16,7 @@ This design extends the existing student lifecycle and evaluation services withi
 ## Components and data
 
 Reuse StudentController, StudentService, StudentRepository, Student/StudentDto, UserRepository, UserUtils, EvaluationService, PeerEvaluationRepository, SubmissionStatusService, Result and the shared Axios instance.
-Extend EditStudentForm.vue, apis/student and SubmitTeamsEvaluations.vue.
+Extend EditStudentForm.vue, UserInfo.vue, apis/student and SubmitTeamsEvaluations.vue. Student uses Hibernate dynamic updates so lifecycle and ordinary profile writes update only changed columns.
 Add ActiveAccountJwtValidator and StudentLifecycleAuthorizationManager, plus a lifecycle-scoped repository lookup/security method. Add StudentUpdateRequest with an optional enabled field for the existing profile endpoint; StudentDto remains the response DTO. No schema change, new background job or reactivation use-case implementation.
 
 | Component | Change | File |
@@ -33,6 +33,7 @@ Add ActiveAccountJwtValidator and StudentLifecycleAuthorizationManager, plus a l
 ```mermaid
 classDiagram
     EditStudentForm --> StudentApi
+    UserInfo --> StudentApi
     StudentApi --> StudentController
     StudentController --> StudentService
     StudentService --> StudentRepository
@@ -117,20 +118,26 @@ All routes use the configured /api/v1 base and existing Result envelopes.
 | T13 | BR-submission-owed | SubmissionStatusService regression | Inactive student owes neither item; peers owe only active teammates including self |
 | T14 | Evaluation UI eligibility | Cypress | New form omits inactive target; saved rows retained; stale-target refusal prompts refresh without success |
 
-Mutation experiment: temporarily remove the inactive-evaluatee refusal, run T11 and record the actual result, restore it, rerun. If it stays green, repair the test and explain why. No mutation evidence is claimed yet.
+Mutation experiment completed: replacing the inactive-evaluatee guard with `if (false)` made `InactiveStudentEvaluationTest.rejectsNewEvaluationOfInactiveTeammate` fail (expected throwable was missing). Restored production code and reran that suite plus StudentDeactivationServiceTest: 10 passed. Full oracle map and limitations: [build evidence](../guides/student-deactivation-verification.md).
+
+## Implementation refinements
+
+- Independent review found the self-profile page still echoed `enabled=true`. UserInfo now sends only profile fields, like EditStudentForm. Explicit legacy activation remains limited to the instructor's inactive-account control.
+- Independent review found full-row ORM updates could restore stale lifecycle/profile state during overlapping requests. Student uses `@DynamicUpdate`: only dirty columns are written, with no schema change. A two-EntityManager integration test covers both commit orders; it requires Docker before this behavior can be considered verified on MySQL. This does not add conflict detection for simultaneous edits of the same field.
+- Evaluation refresh merges saved rows with still-active missing targets after partial submission. All writes settle before refresh becomes available; retries update saved rows rather than submitting duplicates. The Cypress delayed-success/early-refusal regression covers this boundary.
 
 ## Delivery and approval
 
 The design PR references issue #1. Its description records specification validation and unresolved review limitations.
-The user reviews and merges the design PR, as the assignment requires. Implementation follows the merged design in fresh context.
-Build shared service/authentication changes first with tests; pause for the user's trunk review. Keep SecurityConfiguration changes in a separate commit, then controller/UI leaf commits. Run targeted checks per commit and full checks before opening the build PR.
+The user merged design PR #2. At the user's explicit request, implementation continued in the same chat without the fresh-session/trunk-review pauses; no personal trunk review is claimed. Independent review read the code against the written design.
+Shared services and the SecurityConfiguration changes have separate commits, followed by controller/UI and review-fix commits. Targeted tests and the available full suites were run; database-dependent checks could not execute without Docker.
 The build PR links the design PR, says Closes #1, remains open for grading, and records real oracle mappings, mutation results, review findings and unverified items. Personal-review claims must match what the user actually reviewed.
 
 ## Validation status and risks
 
-- No production code or application tests have run for this design-only change. The pull request records the specification checks and their exact coverage.
+- Implementation and passing unit/browser checks are recorded in [build evidence](../guides/student-deactivation-verification.md); verification remains partial.
 - Existing empty-extension gaps outside this use case remain in OI-40.
-- One additional database read per JWT authentication; measure overhead during implementation.
+- One additional database read per JWT authentication; production latency/load has not been measured.
 - Verify current-account visibility after commit with a real token and real database.
 - Verify Docker availability before MySQL integration tests. Report any unavailable checks rather than claiming success.
-- No architectural boundary, deployment or schema change is proposed; this uses the existing authentication subsystem and domain boundaries. When implementation lands, qualify the architecture-of-record's Authentication statement that tokens remain valid for two hours: two hours is the cryptographic expiry, while current-account eligibility is checked on every authenticated request. This is planned synchronization of the existing authentication documentation, not a new authentication subsystem; do not claim the live-account check is already built in this design-only PR.
+- No architectural boundary, deployment or schema change. The architecture-of-record now distinguishes two-hour cryptographic expiry from current-account eligibility checked on every authenticated request. Individual-token revocation remains outside this use case.
