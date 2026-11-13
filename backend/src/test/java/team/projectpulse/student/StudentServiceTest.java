@@ -1,6 +1,7 @@
 package team.projectpulse.student;
 
 import org.junit.jupiter.api.AfterEach;
+import team.projectpulse.student.dto.StudentUpdateRequest;
 import team.projectpulse.instructor.Instructor;
 import team.projectpulse.section.Section;
 import team.projectpulse.section.SectionRepository;
@@ -125,6 +126,7 @@ class StudentServiceTest {
 
     @Test
     void testStudentUpdateOwnInfo() {
+        given(this.userUtils.getUserId()).willReturn(1);
         // Given
         Student update = new Student("john", "John (updated)", "Smith (updated)", "j.smith@abc.edu (updated)", "", false, "admin student");
         given(this.studentRepository.findById(1)).willReturn(Optional.of(this.students.get(0)));
@@ -139,7 +141,7 @@ class StudentServiceTest {
         SecurityContextHolder.setContext(securityContext);
 
         // When
-        Student result = this.studentService.updateStudent(1, update);
+        Student result = this.studentService.updateStudent(1, new StudentUpdateRequest(update.getUsername(), update.getFirstName(), update.getLastName(), update.getEmail(), false));
 
         // Then
         assertThat(result.getUsername()).isEqualTo(update.getUsername());
@@ -152,9 +154,11 @@ class StudentServiceTest {
 
     @Test
     void testInstructorUpdatesStudent() {
+        given(this.userUtils.getUserId()).willReturn(99);
+        given(this.userUtils.hasRole("ROLE_instructor")).willReturn(true);
         // Given
         Student update = new Student("john", "John (updated)", "Smith (updated)", "j.smith@abc.edu (updated)", "", false, "admin student");
-        given(this.studentRepository.findById(1)).willReturn(Optional.of(this.students.get(0)));
+        given(this.studentRepository.findInLifecycleScope(1, 99)).willReturn(Optional.of(this.students.get(0)));
         given(this.studentRepository.save(any(Student.class))).willReturn(this.students.get(0));
 
         Instructor instructor = new Instructor();
@@ -166,7 +170,7 @@ class StudentServiceTest {
         SecurityContextHolder.setContext(securityContext);
 
         // When
-        Student result = this.studentService.updateStudent(1, update);
+        Student result = this.studentService.updateStudent(1, new StudentUpdateRequest(update.getUsername(), update.getFirstName(), update.getLastName(), update.getEmail(), false));
 
         // Then
         assertThat(result.getUsername()).isEqualTo(update.getUsername());
@@ -174,7 +178,7 @@ class StudentServiceTest {
         assertThat(result.getLastName()).isEqualTo(update.getLastName());
         assertThat(result.getEmail()).isEqualTo(update.getEmail());
 //        assertThat(result.getRoles()).isEqualTo(update.getRoles());
-        assertThat(result.isEnabled()).isEqualTo(update.isEnabled());
+        assertThat(result.isEnabled()).isTrue(); // Dedicated deactivation is the only disabling path.
     }
 
     @Test
