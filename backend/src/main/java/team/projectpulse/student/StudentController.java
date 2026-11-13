@@ -1,9 +1,9 @@
 package team.projectpulse.student;
 
-import team.projectpulse.student.converter.StudentDtoToStudentConverter;
 import team.projectpulse.student.converter.StudentRegistrationToStudentConverter;
 import team.projectpulse.student.converter.StudentToStudentDtoConverter;
 import team.projectpulse.student.dto.StudentDto;
+import team.projectpulse.student.dto.StudentUpdateRequest;
 import team.projectpulse.student.dto.StudentRegistrationRequest;
 import team.projectpulse.system.Result;
 import team.projectpulse.system.StatusCode;
@@ -23,14 +23,12 @@ public class StudentController {
     private final StudentService studentService;
     private final StudentRegistrationToStudentConverter studentRegistrationToStudentConverter;
     private final StudentToStudentDtoConverter studentToStudentDtoConverter;
-    private final StudentDtoToStudentConverter studentDtoToStudentConverter;
 
 
-    public StudentController(StudentService studentService, StudentRegistrationToStudentConverter studentRegistrationToStudentConverter, StudentToStudentDtoConverter studentToStudentDtoConverter, StudentDtoToStudentConverter studentDtoToStudentConverter) {
+    public StudentController(StudentService studentService, StudentRegistrationToStudentConverter studentRegistrationToStudentConverter, StudentToStudentDtoConverter studentToStudentDtoConverter) {
         this.studentService = studentService;
         this.studentRegistrationToStudentConverter = studentRegistrationToStudentConverter;
         this.studentToStudentDtoConverter = studentToStudentDtoConverter;
-        this.studentDtoToStudentConverter = studentDtoToStudentConverter;
     }
 
     @PostMapping("/search")
@@ -63,8 +61,7 @@ public class StudentController {
     }
 
     @PutMapping("/{studentId}")
-    public Result updateStudent(@PathVariable Integer studentId, @Valid @RequestBody StudentDto studentDto) {
-        Student update = this.studentDtoToStudentConverter.convert(studentDto);
+    public Result updateStudent(@PathVariable Integer studentId, @Valid @RequestBody StudentUpdateRequest update) {
         Student updatedStudent = this.studentService.updateStudent(studentId, update);
         StudentDto updatedStudentDto = this.studentToStudentDtoConverter.convert(updatedStudent);
         return new Result(true, StatusCode.SUCCESS, "Update student successfully", updatedStudentDto);
@@ -74,6 +71,14 @@ public class StudentController {
     public Result deleteStudent(@PathVariable Integer studentId) {
         this.studentService.deleteStudent(studentId);
         return new Result(true, StatusCode.SUCCESS, "Delete student successfully", null);
+    }
+
+    @PostMapping("/{studentId}/deactivate")
+    public Result deactivateStudent(@PathVariable Integer studentId) {
+        StudentService.Deactivation result = this.studentService.deactivateStudent(studentId);
+        return new Result(true, StatusCode.SUCCESS,
+                result.alreadyInactive() ? "Student is already deactivated" : "Student deactivated successfully",
+                this.studentToStudentDtoConverter.convert(result.student()));
     }
 
 }

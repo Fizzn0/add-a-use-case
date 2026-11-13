@@ -25,6 +25,9 @@ export const searchStudents = (params: PaginationParams, searchCriteria: Student
 export const findStudentById = (id: number) =>
   request.get<any, FindStudentByIdResponse>(`${API.STUDENTS_ENDPOINT}/${id}`)
 
+export const deactivateStudent = (id: number) =>
+  request.post<any, FindStudentByIdResponse>(`${API.STUDENTS_ENDPOINT}/${id}/deactivate`)
+
 export const findStudentsByTeamId = (teamId: number) =>
   request.get<any, FindStudentByTeamIdResponse>(`${API.STUDENTS_ENDPOINT}/teams/${teamId}`)
 

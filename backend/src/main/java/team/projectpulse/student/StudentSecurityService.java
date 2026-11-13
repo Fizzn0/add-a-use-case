@@ -31,6 +31,19 @@ public class StudentSecurityService {
         return studentId.equals(studentIdFromJwt);
     }
 
+    public boolean canManageLifecycle(Integer studentId) {
+        Integer callerId = this.userUtils.getUserId();
+        if (studentId == null || callerId == null
+                || !(this.userUtils.hasRole("ROLE_instructor") || this.userUtils.hasRole("ROLE_admin"))) {
+            return false;
+        }
+        try {
+            return this.studentRepository.findInLifecycleScope(studentId, callerId).isPresent();
+        } catch (org.springframework.dao.DataAccessException ex) {
+            return false; // Authorization helpers deny targets they cannot resolve.
+        }
+    }
+
     /**
      * Check if the user is the instructor of the section that the student is in
      *
