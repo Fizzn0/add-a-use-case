@@ -1458,7 +1458,7 @@ Details:
 
 **Preconditions:**
 - PRE-1. The course admin or instructor is logged into the system.
-- PRE-2. There exists at least one active student in the system.
+- PRE-2. The actor has selected a student account. A repeated request for an inactive account follows E1.
 
 **Postconditions:**
 - POST-1. The student's account is deactivated.
@@ -1473,6 +1473,11 @@ Details:
 7. Use case ends.
 
 **Extensions:**
+- E1 (step 6): The selected student is already inactive, including when another authorized actor deactivated her after step 2. The system reports that the account is already deactivated, makes no further changes, and ends the use case successfully.
+- E2 (steps 2 or 6): The actor is not authorized by BR-student-lifecycle and BR-section-scoped-access. The system refuses the request, changes nothing, and ends the use case. Authorization is checked again when the deactivation is submitted.
+- E3 (steps 3-5): The actor cancels or dismisses the warning before confirming. The system makes no deactivation request and changes nothing. The use case ends.
+- E4 (steps 2 or 6): The selected account no longer exists. The system refuses the request without disclosing account details or changing another account. The use case ends.
+- E5 (step 6): The request fails or its response is lost. The system does not display a success message. It offers retry or refresh; E1 makes a retry safe if the original request committed. A server-side failure before commit rolls back the deactivation.
 **Priority:** Low
 **Frequency of Use:** Rare. Occurs occasionally when a student withdraws from a course section.
 **Business Rules:** BR-student-lifecycle, BR-student-deactivation-membership, BR-inactive-student-evaluations, BR-submission-owed, BR-section-scoped-access
