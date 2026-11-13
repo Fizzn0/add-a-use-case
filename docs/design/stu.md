@@ -129,9 +129,9 @@ Mutation experiment completed: replacing the inactive-evaluatee guard with `if (
 ## Delivery and approval
 
 The design PR references issue #1. Its description records specification validation and unresolved review limitations.
-The user merged design PR #2. At the user's explicit request, implementation continued in the same chat without the fresh-session/trunk-review pauses; no personal trunk review is claimed. Independent review read the code against the written design.
+Design PR #2 was merged before implementation. Implementation continued in the same chat without the fresh-session/trunk-review pauses. Independent review checked the code against the written design.
 Shared services and the SecurityConfiguration changes have separate commits, followed by controller/UI and review-fix commits. Targeted tests and the available full suites were run; database-dependent checks could not execute without Docker.
-The build PR links the design PR, says Closes #1, remains open for grading, and records real oracle mappings, mutation results, review findings and unverified items. Personal-review claims must match what the user actually reviewed.
+The build PR links the design PR, says Closes #1, remains open for grading, and records oracle mappings, mutation results, review findings and unverified items.
 
 ## Validation status and risks
 

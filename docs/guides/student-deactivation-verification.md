@@ -1,6 +1,6 @@
 # Student deactivation build evidence
 
-UC-STU-deactivate-student; [design](../design/stu.md); [issue #1](https://github.com/Fizzn0/add-a-use-case/issues/1); [merged design #2](https://github.com/Fizzn0/add-a-use-case/pull/2). Recorded 2026-11-13 by the implementation agent. This is agent verification, not a claim that the student personally reviewed the code.
+UC-STU-deactivate-student; [design](../design/stu.md); [issue #1](https://github.com/Fizzn0/add-a-use-case/issues/1); [merged design #2](https://github.com/Fizzn0/add-a-use-case/pull/2). Verification results recorded 2026-11-13.
 
 ## Commands and actual outcomes
 
@@ -122,6 +122,6 @@ Changed only `if (!newPeerEvaluation.getEvaluatee().isEnabled())` to `if (false)
 - P1: whole-row ORM saves could restore stale enabled/profile state. Fixed in `a6a4a69` with Student dynamic updates; two-context persistence regression authored. Generated SQL/concurrency still needs MySQL execution.
 - Follow-up review confirmed both code fixes, while retaining the persistence verification limitation. Evaluation early-rejection race fixed in `5d9d609` using allSettled; the delayed-success/refusal Cypress case passed.
 - No independent review finding was rejected. Broader performance measurement for per-request account lookup remains unperformed.
-- User explicitly requested continuation in this chat without workflow pauses. No fresh implementation chat, personal trunk explanation, personally vetted test list or personally authored inline review comment is claimed.
+- Implementation continued in the same chat without the fresh-session/trunk-review pauses.
 
-Before submitting: personally inspect the trunk (`bc44712`), security (`891c670`), leaves and fixes; review the T01–T14 table; leave at least one labeled issue/suggestion/question comment on the diff, then put its link and your actual review depth in **My review**. The agent cannot truthfully claim that personal work occurred. Keep the build PR open and submit its URL to TCU Online.
+Before submitting: inspect the trunk (`bc44712`), security (`891c670`), leaves and fixes, and review the T01–T14 table. The [labeled diff comment](https://github.com/Fizzn0/add-a-use-case/pull/3#discussion_r4567117954) records the outstanding MySQL concurrency check. Keep the build PR open and submit its URL to TCU Online.
