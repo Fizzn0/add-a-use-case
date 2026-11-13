@@ -94,7 +94,14 @@ async function updateCurrentUser() {
   // course and course section) from a persisted store nothing else refreshes, which locked her out of every page
   // that needs a team until she logged in again.
   if (userInfoStore.isStudent) {
-    const result: UpdateStudentResponse = await updateStudent(userInfo.value as Student)
+    const profile = userInfo.value
+    const result: UpdateStudentResponse = await updateStudent({
+      id: profile.id,
+      username: profile.username,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      email: profile.email
+    })
     ElMessage.success('User updated successfully')
     userInfoStore.setUserInfo(result.data)
   } else if (userInfoStore.isInstructor) {

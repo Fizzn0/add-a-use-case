@@ -6,6 +6,8 @@ import team.projectpulse.user.PeerEvaluationUser;
 import jakarta.persistence.*;
 
 @Entity
+// Dirty-column updates prevent an overlapping profile/team save from restoring old enabled state.
+@org.hibernate.annotations.DynamicUpdate
 public class Student extends PeerEvaluationUser {
 
     @ManyToOne(optional = false)

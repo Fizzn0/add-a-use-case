@@ -89,4 +89,14 @@ class StudentDeactivationServiceTest {
     private StudentUpdateRequest update(Boolean enabled) {
         return new StudentUpdateRequest("student", "Changed", "Last", "s@example.test", enabled);
     }
+
+    @Test void studentSelfCanSaveOrdinaryProfileWithoutLifecycleFlag() {
+        Student student = new Student("student", "First", "Last", "s@example.test", "hash", true, "student");
+        when(user.getUserId()).thenReturn(7);
+        when(students.findById(7)).thenReturn(Optional.of(student));
+        service.updateStudent(7, update(null));
+        assertThat(student.getFirstName()).isEqualTo("Changed");
+        assertThat(student.isEnabled()).isTrue();
+        verify(students, never()).findInLifecycleScope(anyInt(), anyInt());
+    }
 }

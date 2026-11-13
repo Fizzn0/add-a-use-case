@@ -38,4 +38,11 @@ class StudentLifecycleAuthorizationTest {
         assertThat(security.canManageLifecycle(99)).isFalse();
         assertThat(security.canManageLifecycle(null)).isFalse();
     }
+
+    @Test void unavailableScopeLookupDeniesAccess() {
+        when(user.getUserId()).thenReturn(2);
+        when(user.hasRole("ROLE_instructor")).thenReturn(true);
+        when(students.findInLifecycleScope(7,2)).thenThrow(new org.springframework.dao.DataAccessResourceFailureException("private database detail"));
+        assertThat(security.canManageLifecycle(7)).isFalse();
+    }
 }

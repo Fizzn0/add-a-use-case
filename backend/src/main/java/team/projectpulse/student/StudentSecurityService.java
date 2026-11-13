@@ -37,7 +37,11 @@ public class StudentSecurityService {
                 || !(this.userUtils.hasRole("ROLE_instructor") || this.userUtils.hasRole("ROLE_admin"))) {
             return false;
         }
-        return this.studentRepository.findInLifecycleScope(studentId, callerId).isPresent();
+        try {
+            return this.studentRepository.findInLifecycleScope(studentId, callerId).isPresent();
+        } catch (org.springframework.dao.DataAccessException ex) {
+            return false; // Authorization helpers deny targets they cannot resolve.
+        }
     }
 
     /**
