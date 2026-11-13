@@ -1,6 +1,5 @@
 package team.projectpulse.student;
 
-import team.projectpulse.student.converter.StudentDtoToStudentConverter;
 import team.projectpulse.student.converter.StudentRegistrationToStudentConverter;
 import team.projectpulse.student.converter.StudentToStudentDtoConverter;
 import team.projectpulse.student.dto.StudentDto;
@@ -24,14 +23,12 @@ public class StudentController {
     private final StudentService studentService;
     private final StudentRegistrationToStudentConverter studentRegistrationToStudentConverter;
     private final StudentToStudentDtoConverter studentToStudentDtoConverter;
-    private final StudentDtoToStudentConverter studentDtoToStudentConverter;
 
 
-    public StudentController(StudentService studentService, StudentRegistrationToStudentConverter studentRegistrationToStudentConverter, StudentToStudentDtoConverter studentToStudentDtoConverter, StudentDtoToStudentConverter studentDtoToStudentConverter) {
+    public StudentController(StudentService studentService, StudentRegistrationToStudentConverter studentRegistrationToStudentConverter, StudentToStudentDtoConverter studentToStudentDtoConverter) {
         this.studentService = studentService;
         this.studentRegistrationToStudentConverter = studentRegistrationToStudentConverter;
         this.studentToStudentDtoConverter = studentToStudentDtoConverter;
-        this.studentDtoToStudentConverter = studentDtoToStudentConverter;
     }
 
     @PostMapping("/search")
@@ -74,6 +71,14 @@ public class StudentController {
     public Result deleteStudent(@PathVariable Integer studentId) {
         this.studentService.deleteStudent(studentId);
         return new Result(true, StatusCode.SUCCESS, "Delete student successfully", null);
+    }
+
+    @PostMapping("/{studentId}/deactivate")
+    public Result deactivateStudent(@PathVariable Integer studentId) {
+        StudentService.Deactivation result = this.studentService.deactivateStudent(studentId);
+        return new Result(true, StatusCode.SUCCESS,
+                result.alreadyInactive() ? "Student is already deactivated" : "Student deactivated successfully",
+                this.studentToStudentDtoConverter.convert(result.student()));
     }
 
 }
